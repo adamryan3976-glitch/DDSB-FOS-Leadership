@@ -17,7 +17,6 @@
         }
 
         .brutalist-shadow {
-            shadow-offset: 6px 6px;
             box-shadow: 6px 6px 0px 0px rgba(0,0,0,1);
         }
 
@@ -36,6 +35,15 @@
         }
         .animate-pulse-soft {
             animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .like-pop {
+            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
     </style>
 </head>
@@ -144,11 +152,11 @@
                 </div>
                 <div class="flex gap-3">
                     <div class="bg-black text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black">2</div>
-                    <p>Responses save instantly to the <span class="text-emerald-500 italic">FOS Leadership</span> Sheet.</p>
+                    <p>Responses save instantly to your Google Sheet.</p>
                 </div>
                 <div class="flex gap-3">
                     <div class="bg-black text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black">3</div>
-                    <p>The <span class="text-black italic underline">Feed</span> updates every minute automatically!</p>
+                    <p>Support your peers by tapping the <span class="text-emerald-600 font-black">Like</span> button. Tap again to unlike.</p>
                 </div>
             </div>
             <button onclick="toggleInfo(false)" class="mt-8 w-full bg-black text-white p-4 rounded-xl font-black uppercase hover:bg-emerald-500 transition-colors">Got it!</button>
@@ -167,10 +175,10 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyeEtVEbVp1h2XoclzIh3h6IjxzYU2dPyMx85H4WbpkskZJJj8FfWCzNtdKVrGCNKX4vw/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxqu7LiXkzJu0P49aSGHnOY8GtuV-MG6jsBVOADS6EuwSYzm1qmCwhP1ffXPXCBz3JTTg/exec";
         let questions = { q1: '...', q2: '...' };
         let currentView = 'ask';
-        let refreshInterval;
+        let likedEntries = JSON.parse(localStorage.getItem('fos_liked_entries') || '[]');
 
         // Initialize
         window.onload = () => {
@@ -233,17 +241,35 @@
                 return;
             }
 
-            container.innerHTML = responses.map(resp => `
+            container.innerHTML = responses.map((resp, index) => {
+                // Unique ID for the post to track like state
+                const entryId = (resp.Timestamp || 'T') + "_" + (resp.User || 'U') + "_" + index;
+                const isLiked = likedEntries.includes(entryId);
+                const likeCount = resp.Likes || 0;
+
+                return `
                 <div class="bg-white border-2 border-black p-5 rounded-2xl brutalist-shadow">
-                    <div class="flex justify-between items-center mb-4">
+                    <div class="flex justify-between items-start mb-4">
                         <div class="flex items-center gap-2">
                             <div class="w-8 h-8 bg-emerald-100 rounded-full border-2 border-black flex items-center justify-center">
                                 <i data-lucide="user" class="w-4 h-4 text-emerald-700"></i>
                             </div>
-                            <span class="text-sm font-black tracking-tight">${resp.User || 'Anonymous'}</span>
+                            <div>
+                                <p class="text-sm font-black tracking-tight leading-none">${resp.User || 'Anonymous'}</p>
+                                <p class="text-[9px] font-mono font-bold text-slate-400 mt-1">${resp.Timestamp ? new Date(resp.Timestamp).toLocaleDateString() : 'Recent'}</p>
+                            </div>
                         </div>
-                        <span class="text-[10px] font-mono font-bold text-slate-400">${resp.Timestamp ? new Date(resp.Timestamp).toLocaleDateString() : 'Recent'}</span>
+                        
+                        <button 
+                            onclick="handleLike('${entryId}', ${index})"
+                            id="likeBtn_${index}"
+                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-black transition-all active-press ${isLiked ? 'bg-emerald-400 brutalist-shadow-sm' : 'bg-white text-slate-400 border-slate-200'}"
+                        >
+                            <i data-lucide="thumbs-up" class="w-4 h-4 ${isLiked ? 'text-black fill-black' : ''}"></i>
+                            <span class="font-black text-xs ${isLiked ? 'text-black' : 'text-slate-400'}">${likeCount}</span>
+                        </button>
                     </div>
+
                     <div class="space-y-4">
                         <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
                             <p class="text-[9px] font-black text-emerald-600 uppercase mb-1 tracking-widest">${questions.q1}</p>
@@ -255,8 +281,54 @@
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
             lucide.createIcons();
+        }
+
+        async function handleLike(entryId, index) {
+            const btn = document.getElementById(`likeBtn_${index}`);
+            if (!btn) return;
+
+            const icon = btn.querySelector('i');
+            const countSpan = btn.querySelector('span');
+            const isAlreadyLiked = likedEntries.includes(entryId);
+            
+            // Toggle local UI immediately
+            if (isAlreadyLiked) {
+                btn.classList.remove('bg-emerald-400', 'brutalist-shadow-sm', 'text-black', 'like-pop');
+                btn.classList.add('bg-white', 'text-slate-400', 'border-slate-200');
+                if (icon) icon.classList.remove('fill-black', 'text-black');
+                if (countSpan) {
+                    countSpan.classList.replace('text-black', 'text-slate-400');
+                    countSpan.textContent = Math.max(0, parseInt(countSpan.textContent || 0) - 1);
+                }
+                likedEntries = likedEntries.filter(id => id !== entryId);
+            } else {
+                btn.classList.remove('bg-white', 'text-slate-400', 'border-slate-200');
+                btn.classList.add('bg-emerald-400', 'brutalist-shadow-sm', 'text-black', 'like-pop');
+                if (icon) icon.classList.add('fill-black', 'text-black');
+                if (countSpan) {
+                    countSpan.classList.replace('text-slate-400', 'text-black');
+                    countSpan.textContent = parseInt(countSpan.textContent || 0) + 1;
+                }
+                likedEntries.push(entryId);
+            }
+
+            localStorage.setItem('fos_liked_entries', JSON.stringify(likedEntries));
+
+            // Sync with Server
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        type: isAlreadyLiked ? 'unlike' : 'like',
+                        rowId: index // index maps correctly in your v3 code.gs
+                    })
+                });
+            } catch (err) {
+                console.error("Sync failed", err);
+            }
         }
 
         document.getElementById('postForm').onsubmit = async (e) => {
@@ -268,6 +340,7 @@
             btnText.textContent = "SENDING...";
 
             const payload = {
+                type: 'post',
                 user: document.getElementById('userInput').value,
                 q1: document.getElementById('q1Input').value,
                 q2: document.getElementById('q2Input').value
