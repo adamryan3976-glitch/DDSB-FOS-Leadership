@@ -1,339 +1,330 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Send, RefreshCw, MessageSquare, User, CheckCircle2, HelpCircle, Info, X } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FOS Leadership Portal</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-/**
- * VIBE CODING SPECIALIST - PROJECT: FOS LEADERSHIP PORTAL
- * Update: Added Auto-Refresh (60s) and Instructional Overlay.
- */
+        .brutalist-shadow {
+            shadow-offset: 6px 6px;
+            box-shadow: 6px 6px 0px 0px rgba(0,0,0,1);
+        }
 
-// --- CONFIGURATION ---
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyeEtVEbVp1h2XoclzIh3h6IjxzYU2dPyMx85H4WbpkskZJJj8FfWCzNtdKVrGCNKX4vw/exec"; 
-const REFRESH_INTERVAL = 60000; // 60 seconds
+        .brutalist-shadow-sm {
+            box-shadow: 3px 3px 0px 0px rgba(0,0,0,1);
+        }
 
-const App = () => {
-  const [view, setView] = useState('ask'); 
-  const [responses, setResponses] = useState([]);
-  const [questions, setQuestions] = useState({ q1: 'Fetching Question 1...', q2: 'Fetching Question 2...' });
-  const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState({ q1: '', q2: '', user: '' });
-  const [status, setStatus] = useState(null);
-  const [showInfo, setShowInfo] = useState(false);
-  
-  const refreshTimerRef = useRef(null);
+        .active-press:active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
 
-  const appIcon = `data:image/svg+xml;base64,${btoa(`
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100" height="100" rx="20" fill="#10B981"/>
-      <path d="M30 50 L45 65 L70 35" stroke="white" stroke-width="10" fill="none" stroke-linecap="round"/>
-    </svg>
-  `)}`;
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .animate-pulse-soft {
+            animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-900 pb-24 min-h-screen">
 
-  // Initial Load
-  useEffect(() => {
-    fetchData();
-    
-    // Set Favicons
-    const link = document.querySelector("link[rel~='icon']") || document.createElement('link');
-    link.rel = 'icon';
-    link.href = appIcon;
-    document.getElementsByTagName('head')[0].appendChild(link);
-    
-    const appleIcon = document.createElement('link');
-    appleIcon.rel = 'apple-touch-icon';
-    appleIcon.href = appIcon;
-    document.getElementsByTagName('head')[0].appendChild(appleIcon);
-
-    return () => {
-      if (refreshTimerRef.current) clearInterval(refreshTimerRef.current);
-    };
-  }, []);
-
-  // Auto-Refresh Logic (only active on Feed view)
-  useEffect(() => {
-    if (view === 'feed') {
-      refreshTimerRef.current = setInterval(() => {
-        fetchData(true); // silent refresh
-      }, REFRESH_INTERVAL);
-    } else {
-      if (refreshTimerRef.current) clearInterval(refreshTimerRef.current);
-    }
-    return () => {
-      if (refreshTimerRef.current) clearInterval(refreshTimerRef.current);
-    };
-  }, [view]);
-
-  const fetchData = async (silent = false) => {
-    if (!silent) setLoading(true);
-    try {
-      const response = await fetch(WEB_APP_URL);
-      const data = await response.json();
-      
-      if (data.error) {
-        console.error("Backend Error:", data.error);
-        setQuestions({ q1: 'Error: Check Sheet Name', q2: 'Error: Check Sheet Name' });
-        return;
-      }
-
-      setResponses(data.responses || []);
-      
-      if (data.questions && data.questions.q1) {
-        setQuestions({
-          q1: data.questions.q1 || "Question 1 (Empty in Sheet)",
-          q2: data.questions.q2 || "Question 2 (Empty in Sheet)"
-        });
-      }
-    } catch (error) {
-      console.error("Fetch error:", error);
-      if (!silent) setQuestions({ q1: 'Failed to load question', q2: 'Failed to load question' });
-    } finally {
-      if (!silent) setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      await fetch(WEB_APP_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: JSON.stringify(formData)
-      });
-      
-      setStatus({ type: 'success', msg: 'Response submitted!' });
-      setFormData({ ...formData, q1: '', q2: '' }); 
-      setTimeout(() => {
-        setStatus(null);
-        setView('feed');
-        fetchData();
-      }, 1500);
-    } catch (error) {
-      setStatus({ type: 'error', msg: 'Submission failed.' });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 pb-24">
-      {/* Header */}
-      <header className="bg-white border-b-4 border-black p-6 sticky top-0 z-10">
-        <div className="max-w-md mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div>
-              <h1 className="text-2xl font-black italic tracking-tighter uppercase leading-none text-black">FOS</h1>
-              <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Leadership Portal</p>
+    <!-- Header -->
+    <header class="bg-white border-b-4 border-black p-6 sticky top-0 z-30">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div>
+                    <h1 class="text-2xl font-black italic tracking-tighter uppercase leading-none text-black">FOS</h1>
+                    <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Leadership Portal</p>
+                </div>
+                <button onclick="toggleInfo(true)" class="text-slate-300 hover:text-black transition-colors">
+                    <i data-lucide="info" class="w-5 h-5"></i>
+                </button>
             </div>
-            <button 
-              onClick={() => setShowInfo(true)}
-              className="text-slate-300 hover:text-black transition-colors"
-            >
-              <Info className="w-5 h-5" />
+            <button id="refreshBtn" onclick="fetchData()" class="p-2 border-2 border-black rounded-lg bg-white hover:bg-emerald-400 transition-colors brutalist-shadow-sm active-press">
+                <i data-lucide="refresh-cw" id="refreshIcon" class="w-5 h-5"></i>
             </button>
-          </div>
-          <button 
-            onClick={() => fetchData()}
-            disabled={loading}
-            className="p-2 border-2 border-black rounded-lg bg-white hover:bg-emerald-400 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
-          >
-            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-          </button>
         </div>
-      </header>
+    </header>
 
-      <main className="max-w-md mx-auto p-4 pt-6">
-        {view === 'feed' ? (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-emerald-500" /> Community Feed
-              </h2>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-[10px] font-bold text-slate-400 uppercase">Live</span>
-                <span className="text-xs font-bold bg-black text-white px-2 py-1 rounded-full">
-                  {responses.length}
-                </span>
-              </div>
+    <main class="max-w-md mx-auto p-4 pt-6">
+        <!-- SUBMIT VIEW (Landing) -->
+        <div id="askView" class="space-y-6">
+            <div class="bg-white border-2 border-black p-6 rounded-3xl brutalist-shadow">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-12 h-12 bg-blue-500 rounded-2xl border-2 border-black flex items-center justify-center rotate-3 brutalist-shadow-sm text-white">
+                        <i data-lucide="help-circle" class="w-6 h-6"></i>
+                    </div>
+                    <h2 class="text-2xl font-black tracking-tighter text-black uppercase">Post</h2>
+                </div>
+                
+                <form id="postForm" class="space-y-5">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black uppercase tracking-widest ml-1 text-slate-500">Identity</label>
+                        <input type="text" id="userInput" placeholder="Who are you? (Optional)" class="w-full border-2 border-black p-3 rounded-xl focus:bg-emerald-50 outline-none font-bold shadow-inner">
+                    </div>
+
+                    <div class="space-y-1">
+                        <label id="q1Label" class="text-[10px] font-black uppercase tracking-widest ml-1 text-emerald-600 italic">Fetching Question 1...</label>
+                        <textarea required id="q1Input" rows="2" placeholder="Tap to answer..." class="w-full border-2 border-black p-3 rounded-xl focus:bg-emerald-50 outline-none font-bold resize-none shadow-inner"></textarea>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label id="q2Label" class="text-[10px] font-black uppercase tracking-widest ml-1 text-blue-600 italic">Fetching Question 2...</label>
+                        <textarea required id="q2Input" rows="3" placeholder="Tap to answer..." class="w-full border-2 border-black p-3 rounded-xl focus:bg-blue-50 outline-none font-bold resize-none shadow-inner"></textarea>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full bg-black text-white font-black p-4 rounded-xl flex items-center justify-center gap-2 hover:bg-emerald-500 transition-all active-press">
+                        <span id="btnText">PUBLISH RESPONSE</span>
+                        <i data-lucide="send" class="w-5 h-5"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- FEED VIEW (Hidden by default) -->
+        <div id="feedView" class="hidden space-y-6">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-black uppercase tracking-tight flex items-center gap-2">
+                    <i data-lucide="message-square" class="w-5 h-5 text-emerald-500"></i> Community Feed
+                </h2>
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse-soft"></div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase">Live</span>
+                    <span id="countBadge" class="text-xs font-bold bg-black text-white px-2 py-1 rounded-full">0</span>
+                </div>
             </div>
             
-            <div className="space-y-5">
-              {loading && responses.length === 0 ? (
-                <div className="p-12 text-center animate-pulse">
-                  <div className="w-12 h-12 bg-slate-200 rounded-full mx-auto mb-4 border-2 border-black" />
-                  <p className="font-black text-slate-400 uppercase">Synchronizing...</p>
-                </div>
-              ) : responses.length === 0 ? (
-                <div className="p-12 text-center border-4 border-dashed border-slate-300 rounded-3xl">
-                  <p className="text-slate-400 font-bold">The feed is quiet. Start the conversation!</p>
-                </div>
-              ) : (
-                responses.map((resp, idx) => (
-                  <div 
-                    key={idx} 
-                    className="bg-white border-2 border-black p-5 rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
-                  >
-                    <div className="flex justify-between items-center mb-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-emerald-100 rounded-full border-2 border-black flex items-center justify-center">
-                          <User className="w-4 h-4 text-emerald-700" />
-                        </div>
-                        <span className="text-sm font-black tracking-tight">{resp.User || 'Anonymous'}</span>
-                      </div>
-                      <span className="text-[10px] font-mono font-bold text-slate-400">
-                        {resp.Timestamp ? new Date(resp.Timestamp).toLocaleDateString() : 'Just now'}
-                      </span>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                        <p className="text-[9px] font-black text-emerald-600 uppercase mb-1 tracking-widest">{questions.q1}</p>
-                        <p className="font-bold text-base leading-snug text-slate-800">{resp.Question1}</p>
-                      </div>
-                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                        <p className="text-[9px] font-black text-blue-600 uppercase mb-1 tracking-widest">{questions.q2}</p>
-                        <p className="text-sm font-medium text-slate-700 italic">"{resp.Question2}"</p>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
+            <div id="feedContainer" class="space-y-5">
+                <!-- Responses injected here -->
             </div>
-          </div>
-        ) : (
-          <div className="space-y-6 animate-in slide-in-from-bottom-4">
-            <div className="bg-white border-2 border-black p-6 rounded-3xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-blue-500 rounded-2xl border-2 border-black flex items-center justify-center rotate-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-                  <HelpCircle className="text-white w-6 h-6" />
-                </div>
-                <h2 className="text-2xl font-black tracking-tighter text-black uppercase">Post</h2>
-              </div>
-              
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase tracking-widest ml-1 text-slate-500">Identity</label>
-                  <input 
-                    type="text"
-                    placeholder="Who are you? (Optional)"
-                    className="w-full border-2 border-black p-3 rounded-xl focus:bg-emerald-50 focus:ring-0 outline-none font-bold transition-all shadow-inner"
-                    value={formData.user}
-                    onChange={e => setFormData({...formData, user: e.target.value})}
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase tracking-widest ml-1 text-emerald-600">{questions.q1}</label>
-                  <textarea 
-                    required
-                    rows="2"
-                    placeholder="Tap to answer..."
-                    className="w-full border-2 border-black p-3 rounded-xl focus:bg-emerald-50 focus:ring-0 outline-none font-bold transition-all resize-none shadow-inner"
-                    value={formData.q1}
-                    onChange={e => setFormData({...formData, q1: e.target.value})}
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase tracking-widest ml-1 text-blue-600">{questions.q2}</label>
-                  <textarea 
-                    required
-                    rows="3"
-                    placeholder="Tap to answer..."
-                    className="w-full border-2 border-black p-3 rounded-xl focus:bg-blue-50 focus:ring-0 outline-none font-bold transition-all resize-none shadow-inner"
-                    value={formData.q2}
-                    onChange={e => setFormData({...formData, q2: e.target.value})}
-                  />
-                </div>
-
-                <button 
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full bg-black text-white font-black p-4 rounded-xl flex items-center justify-center gap-2 hover:bg-emerald-500 transition-all active:translate-y-1 active:shadow-none disabled:opacity-50 shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)]"
-                >
-                  {submitting ? 'SENDING...' : 'PUBLISH RESPONSE'}
-                  <Send className="w-5 h-5" />
-                </button>
-              </form>
-            </div>
-          </div>
-        )}
-      </main>
-
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t-4 border-black p-4 pb-8 z-20">
-        <div className="max-w-md mx-auto flex gap-4">
-          <button 
-            onClick={() => setView('feed')}
-            className={`flex-1 p-3 rounded-2xl font-black flex items-center justify-center gap-2 transition-all border-2 border-black ${view === 'feed' ? 'bg-emerald-400 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] text-black' : 'bg-white text-slate-400 border-slate-200 shadow-none'}`}
-          >
-            <MessageSquare className="w-5 h-5" />
-            FEED
-          </button>
-          <button 
-            onClick={() => setView('ask')}
-            className={`flex-1 p-3 rounded-2xl font-black flex items-center justify-center gap-2 transition-all border-2 border-black ${view === 'ask' ? 'bg-blue-400 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] text-white' : 'bg-white text-slate-400 border-slate-200 shadow-none'}`}
-          >
-            <Send className="w-5 h-5" />
-            SUBMIT
-          </button>
         </div>
-      </nav>
+    </main>
 
-      {/* Instructional Overlay */}
-      {showInfo && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white border-4 border-black p-8 rounded-[2rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] max-w-sm w-full relative overflow-hidden">
-            <button 
-              onClick={() => setShowInfo(false)}
-              className="absolute top-4 right-4 p-2 hover:bg-slate-100 rounded-full transition-colors"
-            >
-              <X className="w-6 h-6" />
+    <!-- Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t-4 border-black p-4 pb-8 z-20">
+        <div class="max-w-md mx-auto flex gap-4">
+            <button onclick="switchView('feed')" id="navFeed" class="flex-1 p-3 rounded-2xl font-black flex items-center justify-center gap-2 transition-all border-2 border-slate-200 text-slate-400">
+                <i data-lucide="message-square" class="w-5 h-5"></i>
+                FEED
             </button>
-            <div className="w-16 h-16 bg-emerald-400 rounded-2xl border-4 border-black flex items-center justify-center mb-6 -rotate-6">
-              <Info className="text-black w-8 h-8" />
-            </div>
-            <h3 className="text-3xl font-black mb-4 uppercase italic tracking-tighter">How it works</h3>
-            <div className="space-y-4 text-slate-600 font-bold text-sm leading-relaxed">
-              <div className="flex gap-3">
-                <div className="bg-black text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs">1</div>
-                <p>Answer the 2 leadership prompts in the <span className="text-blue-500 italic">Submit</span> tab.</p>
-              </div>
-              <div className="flex gap-3">
-                <div className="bg-black text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs">2</div>
-                <p>Your responses are saved instantly to the <span className="text-emerald-500 italic">FOS Leadership</span> Google Sheet.</p>
-              </div>
-              <div className="flex gap-3">
-                <div className="bg-black text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs">3</div>
-                <p>Check the <span className="text-black italic underline">Feed</span> to see what other leaders are thinking. It refreshes every minute!</p>
-              </div>
-            </div>
-            <button 
-              onClick={() => setShowInfo(false)}
-              className="mt-8 w-full bg-black text-white p-4 rounded-xl font-black uppercase hover:bg-emerald-500 transition-colors"
-            >
-              Got it!
+            <button onclick="switchView('ask')" id="navAsk" class="flex-1 p-3 rounded-2xl font-black flex items-center justify-center gap-2 transition-all border-2 border-black bg-blue-400 brutalist-shadow-sm text-white">
+                <i data-lucide="send" class="w-5 h-5"></i>
+                SUBMIT
             </button>
-          </div>
         </div>
-      )}
+    </nav>
 
-      {/* Success/Error Notifications */}
-      {status && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm">
-          <div className="bg-white border-4 border-black p-8 rounded-[2rem] text-center shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] max-w-xs w-full animate-in zoom-in duration-200">
-            <div className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center border-4 border-black ${status.type === 'success' ? 'bg-emerald-400' : 'bg-red-400'}`}>
-              <CheckCircle2 className="text-black w-10 h-10" />
+    <!-- Info Overlay -->
+    <div id="infoOverlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
+        <div class="bg-white border-4 border-black p-8 rounded-[2rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] max-w-sm w-full relative">
+            <button onclick="toggleInfo(false)" class="absolute top-4 right-4 p-2 hover:bg-slate-100 rounded-full">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <div class="w-16 h-16 bg-emerald-400 rounded-2xl border-4 border-black flex items-center justify-center mb-6 -rotate-6">
+                <i data-lucide="info" class="text-black w-8 h-8"></i>
             </div>
-            <h3 className="text-2xl font-black mb-2 uppercase italic tracking-tighter text-black">
-              {status.type === 'success' ? 'Confirmed!' : 'Error'}
-            </h3>
-            <p className="font-bold text-slate-500 text-sm">{status.msg}</p>
-          </div>
+            <h3 class="text-3xl font-black mb-4 uppercase italic tracking-tighter">How it works</h3>
+            <div class="space-y-4 text-slate-600 font-bold text-sm leading-relaxed">
+                <div class="flex gap-3">
+                    <div class="bg-black text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black">1</div>
+                    <p>Answer the 2 leadership prompts in the <span class="text-blue-500 italic">Submit</span> tab.</p>
+                </div>
+                <div class="flex gap-3">
+                    <div class="bg-black text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black">2</div>
+                    <p>Responses save instantly to the <span class="text-emerald-500 italic">FOS Leadership</span> Sheet.</p>
+                </div>
+                <div class="flex gap-3">
+                    <div class="bg-black text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black">3</div>
+                    <p>The <span class="text-black italic underline">Feed</span> updates every minute automatically!</p>
+                </div>
+            </div>
+            <button onclick="toggleInfo(false)" class="mt-8 w-full bg-black text-white p-4 rounded-xl font-black uppercase hover:bg-emerald-500 transition-colors">Got it!</button>
         </div>
-      )}
     </div>
-  );
-};
 
-export default App;
+    <!-- Status Toast -->
+    <div id="statusOverlay" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm">
+        <div class="bg-white border-4 border-black p-8 rounded-[2rem] text-center shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] max-w-xs w-full">
+            <div id="statusIconBox" class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center border-4 border-black">
+                <i data-lucide="check-circle-2" id="statusIcon" class="text-black w-10 h-10"></i>
+            </div>
+            <h3 id="statusTitle" class="text-2xl font-black mb-2 uppercase italic tracking-tighter text-black">Confirmed!</h3>
+            <p id="statusMsg" class="font-bold text-slate-500 text-sm">Response submitted!</p>
+        </div>
+    </div>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyeEtVEbVp1h2XoclzIh3h6IjxzYU2dPyMx85H4WbpkskZJJj8FfWCzNtdKVrGCNKX4vw/exec";
+        let questions = { q1: '...', q2: '...' };
+        let currentView = 'ask';
+        let refreshInterval;
+
+        // Initialize
+        window.onload = () => {
+            lucide.createIcons();
+            fetchData();
+            startAutoRefresh();
+        };
+
+        function switchView(view) {
+            currentView = view;
+            const ask = document.getElementById('askView');
+            const feed = document.getElementById('feedView');
+            const navAsk = document.getElementById('navAsk');
+            const navFeed = document.getElementById('navFeed');
+
+            if (view === 'ask') {
+                ask.classList.remove('hidden');
+                feed.classList.add('hidden');
+                navAsk.className = "flex-1 p-3 rounded-2xl font-black flex items-center justify-center gap-2 transition-all border-2 border-black bg-blue-400 brutalist-shadow-sm text-white";
+                navFeed.className = "flex-1 p-3 rounded-2xl font-black flex items-center justify-center gap-2 transition-all border-2 border-slate-200 text-slate-400";
+            } else {
+                ask.classList.add('hidden');
+                feed.classList.remove('hidden');
+                navFeed.className = "flex-1 p-3 rounded-2xl font-black flex items-center justify-center gap-2 transition-all border-2 border-black bg-emerald-400 brutalist-shadow-sm text-black";
+                navAsk.className = "flex-1 p-3 rounded-2xl font-black flex items-center justify-center gap-2 transition-all border-2 border-slate-200 text-slate-400";
+                fetchData(true);
+            }
+            lucide.createIcons();
+        }
+
+        async function fetchData(silent = false) {
+            const icon = document.getElementById('refreshIcon');
+            if (!silent) icon.classList.add('animate-spin');
+
+            try {
+                const response = await fetch(WEB_APP_URL);
+                const data = await response.json();
+
+                if (data.questions) {
+                    questions = data.questions;
+                    document.getElementById('q1Label').textContent = questions.q1;
+                    document.getElementById('q2Label').textContent = questions.q2;
+                }
+
+                if (data.responses) {
+                    renderFeed(data.responses);
+                    document.getElementById('countBadge').textContent = data.responses.length;
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                icon.classList.remove('animate-spin');
+            }
+        }
+
+        function renderFeed(responses) {
+            const container = document.getElementById('feedContainer');
+            if (responses.length === 0) {
+                container.innerHTML = `<div class="p-12 text-center border-4 border-dashed border-slate-300 rounded-3xl"><p class="text-slate-400 font-bold">The feed is quiet. Start the conversation!</p></div>`;
+                return;
+            }
+
+            container.innerHTML = responses.map(resp => `
+                <div class="bg-white border-2 border-black p-5 rounded-2xl brutalist-shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 bg-emerald-100 rounded-full border-2 border-black flex items-center justify-center">
+                                <i data-lucide="user" class="w-4 h-4 text-emerald-700"></i>
+                            </div>
+                            <span class="text-sm font-black tracking-tight">${resp.User || 'Anonymous'}</span>
+                        </div>
+                        <span class="text-[10px] font-mono font-bold text-slate-400">${resp.Timestamp ? new Date(resp.Timestamp).toLocaleDateString() : 'Recent'}</span>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                            <p class="text-[9px] font-black text-emerald-600 uppercase mb-1 tracking-widest">${questions.q1}</p>
+                            <p class="font-bold text-base leading-snug text-slate-800">${resp.Question1}</p>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                            <p class="text-[9px] font-black text-blue-600 uppercase mb-1 tracking-widest">${questions.q2}</p>
+                            <p class="text-sm font-medium text-slate-700 italic">"${resp.Question2}"</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        document.getElementById('postForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            
+            btn.disabled = true;
+            btnText.textContent = "SENDING...";
+
+            const payload = {
+                user: document.getElementById('userInput').value,
+                q1: document.getElementById('q1Input').value,
+                q2: document.getElementById('q2Input').value
+            };
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(payload)
+                });
+
+                showStatus('success', 'Response submitted!');
+                document.getElementById('q1Input').value = '';
+                document.getElementById('q2Input').value = '';
+                
+                setTimeout(() => {
+                    hideStatus();
+                    switchView('feed');
+                }, 1500);
+            } catch (err) {
+                showStatus('error', 'Failed to send.');
+                setTimeout(hideStatus, 2000);
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = "PUBLISH RESPONSE";
+            }
+        };
+
+        function showStatus(type, msg) {
+            const overlay = document.getElementById('statusOverlay');
+            const iconBox = document.getElementById('statusIconBox');
+            const title = document.getElementById('statusTitle');
+            const text = document.getElementById('statusMsg');
+
+            title.textContent = type === 'success' ? 'Confirmed!' : 'Error';
+            text.textContent = msg;
+            iconBox.className = `w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center border-4 border-black ${type === 'success' ? 'bg-emerald-400' : 'bg-red-400'}`;
+            
+            overlay.classList.remove('hidden');
+        }
+
+        function hideStatus() {
+            document.getElementById('statusOverlay').classList.add('hidden');
+        }
+
+        function toggleInfo(show) {
+            document.getElementById('infoOverlay').classList.toggle('hidden', !show);
+        }
+
+        function startAutoRefresh() {
+            setInterval(() => {
+                if (currentView === 'feed') {
+                    fetchData(true);
+                }
+            }, 60000);
+        }
+    </script>
+</body>
+</html>
