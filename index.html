@@ -2,12 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FOS Leadership Portal</title>
-    <!-- Tailwind CSS for styling -->
+    
+    <!-- PWA / Homescreen Icons -->
+    <link rel="apple-touch-icon" href="https://github.com/adamryan3976-glitch/DDSB-FOS-Leadership/blob/main/DDSB_Logo_Header-rbg.png?raw=true">
+    <link rel="icon" type="image/png" href="https://github.com/adamryan3976-glitch/DDSB-FOS-Leadership/blob/main/DDSB_Logo_Header-rbg.png?raw=true">
+    <meta name="apple-mobile-web-app-title" content="FOS Portal">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ddsbMaroon: '#930032',
+                        ddsbBlue: '#005596',
+                        ddsbOrange: '#F7941E'
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         
@@ -37,33 +60,35 @@
             animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
 
-        @keyframes pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-        .like-pop {
-            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        .logo-container img {
+            max-height: 40px;
+            width: auto;
         }
     </style>
 </head>
-<body class="bg-[#F8FAFC] text-slate-900 pb-24 min-h-screen">
+<body class="bg-[#F8FAFC] text-slate-900 pb-32 min-h-screen">
 
     <!-- Header -->
-    <header class="bg-white border-b-4 border-black p-6 sticky top-0 z-30">
+    <header class="bg-white border-b-4 border-black p-4 sticky top-0 z-30">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div>
-                    <h1 class="text-2xl font-black italic tracking-tighter uppercase leading-none text-black">FOS</h1>
-                    <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Leadership Portal</p>
+                <div class="logo-container">
+                    <img src="https://github.com/adamryan3976-glitch/DDSB-FOS-Leadership/blob/main/DDSB_Logo_Header-rbg.png?raw=true" alt="DDSB Logo">
                 </div>
-                <button onclick="toggleInfo(true)" class="text-slate-300 hover:text-black transition-colors">
+                <div class="h-8 w-[2px] bg-slate-200"></div>
+                <div>
+                    <h1 class="text-xl font-black italic tracking-tighter uppercase leading-none text-black">FOS</h1>
+                    <p class="text-[9px] font-bold text-ddsbMaroon uppercase tracking-widest">Leadership</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="toggleInfo(true)" class="p-2 text-slate-400 hover:text-black">
                     <i data-lucide="info" class="w-5 h-5"></i>
                 </button>
+                <button id="refreshBtn" onclick="fetchData()" class="p-2 border-2 border-black rounded-lg bg-white hover:bg-ddsbBlue hover:text-white transition-colors brutalist-shadow-sm active-press">
+                    <i data-lucide="refresh-cw" id="refreshIcon" class="w-5 h-5"></i>
+                </button>
             </div>
-            <button id="refreshBtn" onclick="fetchData()" class="p-2 border-2 border-black rounded-lg bg-white hover:bg-emerald-400 transition-colors brutalist-shadow-sm active-press">
-                <i data-lucide="refresh-cw" id="refreshIcon" class="w-5 h-5"></i>
-            </button>
         </div>
     </header>
 
@@ -72,30 +97,30 @@
         <div id="askView" class="space-y-6">
             <div class="bg-white border-2 border-black p-6 rounded-3xl brutalist-shadow">
                 <div class="flex items-center gap-3 mb-6">
-                    <div class="w-12 h-12 bg-blue-500 rounded-2xl border-2 border-black flex items-center justify-center rotate-3 brutalist-shadow-sm text-white">
-                        <i data-lucide="help-circle" class="w-6 h-6"></i>
+                    <div class="w-12 h-12 bg-ddsbMaroon rounded-2xl border-2 border-black flex items-center justify-center rotate-3 brutalist-shadow-sm text-white">
+                        <i data-lucide="pen-tool" class="w-6 h-6"></i>
                     </div>
-                    <h2 class="text-2xl font-black tracking-tighter text-black uppercase">Post</h2>
+                    <h2 class="text-2xl font-black tracking-tighter text-black uppercase">Post Response</h2>
                 </div>
                 
                 <form id="postForm" class="space-y-5">
                     <div class="space-y-1">
-                        <label class="text-[10px] font-black uppercase tracking-widest ml-1 text-slate-500">Identity</label>
-                        <input type="text" id="userInput" placeholder="Who are you? (Optional)" class="w-full border-2 border-black p-3 rounded-xl focus:bg-emerald-50 outline-none font-bold shadow-inner">
+                        <label class="text-[10px] font-black uppercase tracking-widest ml-1 text-slate-500">Your Identity</label>
+                        <input type="text" id="userInput" placeholder="Name or Role (Optional)" class="w-full border-2 border-black p-3 rounded-xl focus:ring-2 focus:ring-ddsbMaroon outline-none font-bold shadow-inner bg-slate-50">
                     </div>
 
                     <div class="space-y-1">
-                        <label id="q1Label" class="text-[10px] font-black uppercase tracking-widest ml-1 text-emerald-600 italic">Fetching Question 1...</label>
-                        <textarea required id="q1Input" rows="2" placeholder="Tap to answer..." class="w-full border-2 border-black p-3 rounded-xl focus:bg-emerald-50 outline-none font-bold resize-none shadow-inner"></textarea>
+                        <label id="q1Label" class="text-[10px] font-black uppercase tracking-widest ml-1 text-ddsbMaroon italic">Question 1...</label>
+                        <textarea required id="q1Input" rows="2" placeholder="Your thoughts..." class="w-full border-2 border-black p-3 rounded-xl focus:bg-red-50 outline-none font-bold resize-none shadow-inner"></textarea>
                     </div>
 
                     <div class="space-y-1">
-                        <label id="q2Label" class="text-[10px] font-black uppercase tracking-widest ml-1 text-blue-600 italic">Fetching Question 2...</label>
-                        <textarea required id="q2Input" rows="3" placeholder="Tap to answer..." class="w-full border-2 border-black p-3 rounded-xl focus:bg-blue-50 outline-none font-bold resize-none shadow-inner"></textarea>
+                        <label id="q2Label" class="text-[10px] font-black uppercase tracking-widest ml-1 text-ddsbBlue italic">Question 2...</label>
+                        <textarea required id="q2Input" rows="3" placeholder="Explain further..." class="w-full border-2 border-black p-3 rounded-xl focus:bg-blue-50 outline-none font-bold resize-none shadow-inner"></textarea>
                     </div>
 
-                    <button type="submit" id="submitBtn" class="w-full bg-black text-white font-black p-4 rounded-xl flex items-center justify-center gap-2 hover:bg-emerald-500 transition-all active-press">
-                        <span id="btnText">PUBLISH RESPONSE</span>
+                    <button type="submit" id="submitBtn" class="w-full bg-black text-white font-black p-4 rounded-xl flex items-center justify-center gap-2 hover:bg-ddsbMaroon transition-all active-press">
+                        <span id="btnText">PUBLISH TO FEED</span>
                         <i data-lucide="send" class="w-5 h-5"></i>
                     </button>
                 </form>
@@ -106,11 +131,10 @@
         <div id="feedView" class="hidden space-y-6">
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-black uppercase tracking-tight flex items-center gap-2">
-                    <i data-lucide="message-square" class="w-5 h-5 text-emerald-500"></i> Responses
+                    <i data-lucide="message-square" class="w-5 h-5 text-ddsbMaroon"></i> Leadership Feed
                 </h2>
                 <div class="flex items-center gap-2">
-                    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse-soft"></div>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase">Live</span>
+                    <div class="w-2 h-2 bg-ddsbMaroon rounded-full animate-pulse-soft"></div>
                     <span id="countBadge" class="text-xs font-bold bg-black text-white px-2 py-1 rounded-full">0</span>
                 </div>
             </div>
@@ -122,13 +146,13 @@
     <!-- Navigation -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t-4 border-black p-4 pb-8 z-20">
         <div class="max-w-md mx-auto flex gap-4">
-            <button onclick="switchView('ask')" id="navAsk" class="flex-1 p-3 rounded-2xl font-black flex items-center justify-center gap-2 transition-all border-2 border-black bg-blue-400 brutalist-shadow-sm text-white">
-                <i data-lucide="help-circle" class="w-5 h-5"></i>
-                QUESTIONS
+            <button onclick="switchView('ask')" id="navAsk" class="flex-1 p-3 rounded-2xl font-black flex items-center justify-center gap-2 transition-all border-2 border-black bg-ddsbMaroon brutalist-shadow-sm text-white">
+                <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                POST
             </button>
             <button onclick="switchView('feed')" id="navFeed" class="flex-1 p-3 rounded-2xl font-black flex items-center justify-center gap-2 transition-all border-2 border-slate-200 text-slate-400">
-                <i data-lucide="message-square" class="w-5 h-5"></i>
-                RESPONSES
+                <i data-lucide="layout" class="w-5 h-5"></i>
+                FEED
             </button>
         </div>
     </nav>
@@ -139,25 +163,23 @@
             <button onclick="toggleInfo(false)" class="absolute top-4 right-4 p-2 hover:bg-slate-100 rounded-full">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
-            <div class="w-16 h-16 bg-emerald-400 rounded-2xl border-4 border-black flex items-center justify-center mb-6 -rotate-6">
-                <i data-lucide="info" class="text-black w-8 h-8"></i>
-            </div>
-            <h3 class="text-3xl font-black mb-4 uppercase italic tracking-tighter">How it works</h3>
+            <img src="https://github.com/adamryan3976-glitch/DDSB-FOS-Leadership/blob/main/DDSB_Logo_Header-rbg.png?raw=true" class="h-10 mb-6" alt="DDSB">
+            <h3 class="text-3xl font-black mb-4 uppercase italic tracking-tighter">Portal Guide</h3>
             <div class="space-y-4 text-slate-600 font-bold text-sm leading-relaxed">
                 <div class="flex gap-3">
-                    <div class="bg-black text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black">1</div>
-                    <p>Answer the 2 leadership prompts in the <span class="text-blue-500 italic">Questions</span> tab.</p>
+                    <div class="bg-ddsbMaroon text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black italic">1</div>
+                    <p>Share your leadership insights in the <span class="text-ddsbMaroon italic">Post</span> tab.</p>
                 </div>
                 <div class="flex gap-3">
-                    <div class="bg-black text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black">2</div>
-                    <p>Responses save instantly to your Google Sheet.</p>
+                    <div class="bg-ddsbBlue text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black italic">2</div>
+                    <p>Responses update the shared Google Sheet instantly.</p>
                 </div>
                 <div class="flex gap-3">
-                    <div class="bg-black text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black">3</div>
-                    <p>Support your peers in the <span class="text-emerald-500 italic">Responses</span> tab by tapping Like.</p>
+                    <div class="bg-black text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black italic">3</div>
+                    <p>Tap <i data-lucide="thumbs-up" class="w-3 h-3 inline"></i> on the Feed to support colleagues.</p>
                 </div>
             </div>
-            <button onclick="toggleInfo(false)" class="mt-8 w-full bg-black text-white p-4 rounded-xl font-black uppercase hover:bg-emerald-500 transition-colors">Got it!</button>
+            <button onclick="toggleInfo(false)" class="mt-8 w-full bg-black text-white p-4 rounded-xl font-black uppercase hover:bg-ddsbMaroon transition-colors">Let's Go</button>
         </div>
     </div>
 
@@ -165,10 +187,10 @@
     <div id="statusOverlay" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm">
         <div class="bg-white border-4 border-black p-8 rounded-[2rem] text-center shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] max-w-xs w-full">
             <div id="statusIconBox" class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center border-4 border-black">
-                <i data-lucide="check-circle-2" id="statusIcon" class="text-black w-10 h-10"></i>
+                <i data-lucide="check" id="statusIcon" class="text-black w-10 h-10"></i>
             </div>
-            <h3 id="statusTitle" class="text-2xl font-black mb-2 uppercase italic tracking-tighter text-black">Confirmed!</h3>
-            <p id="statusMsg" class="font-bold text-slate-500 text-sm">Response submitted!</p>
+            <h3 id="statusTitle" class="text-2xl font-black mb-2 uppercase italic tracking-tighter text-black">Success</h3>
+            <p id="statusMsg" class="font-bold text-slate-500 text-sm">Response live!</p>
         </div>
     </div>
 
@@ -176,7 +198,7 @@
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxqu7LiXkzJu0P49aSGHnOY8GtuV-MG6jsBVOADS6EuwSYzm1qmCwhP1ffXPXCBz3JTTg/exec";
         let questions = { q1: '...', q2: '...' };
         let currentView = 'ask';
-        let likedEntries = JSON.parse(localStorage.getItem('fos_liked_entries') || '[]');
+        let likedEntries = JSON.parse(localStorage.getItem('fos_liked_entries_v2') || '[]');
 
         window.onload = () => {
             lucide.createIcons();
@@ -194,12 +216,12 @@
             if (view === 'ask') {
                 ask.classList.remove('hidden');
                 feed.classList.add('hidden');
-                navAsk.className = "flex-1 p-3 rounded-2xl font-black flex items-center justify-center gap-2 transition-all border-2 border-black bg-blue-400 brutalist-shadow-sm text-white";
+                navAsk.className = "flex-1 p-3 rounded-2xl font-black flex items-center justify-center gap-2 transition-all border-2 border-black bg-ddsbMaroon brutalist-shadow-sm text-white";
                 navFeed.className = "flex-1 p-3 rounded-2xl font-black flex items-center justify-center gap-2 transition-all border-2 border-slate-200 text-slate-400";
             } else {
                 ask.classList.add('hidden');
                 feed.classList.remove('hidden');
-                navFeed.className = "flex-1 p-3 rounded-2xl font-black flex items-center justify-center gap-2 transition-all border-2 border-black bg-emerald-400 brutalist-shadow-sm text-black";
+                navFeed.className = "flex-1 p-3 rounded-2xl font-black flex items-center justify-center gap-2 transition-all border-2 border-black bg-ddsbBlue brutalist-shadow-sm text-white";
                 navAsk.className = "flex-1 p-3 rounded-2xl font-black flex items-center justify-center gap-2 transition-all border-2 border-slate-200 text-slate-400";
                 fetchData(true);
             }
@@ -213,7 +235,7 @@
             if (!silent) {
                 icon.classList.add('animate-spin');
                 if (container.innerHTML.trim() === "") {
-                    container.innerHTML = `<div class="p-12 text-center"><p class="text-slate-400 font-bold animate-pulse">Loading Responses...</p></div>`;
+                    container.innerHTML = `<div class="p-12 text-center"><p class="text-slate-400 font-bold animate-pulse uppercase text-xs tracking-widest">Updating Feed...</p></div>`;
                 }
             }
 
@@ -240,23 +262,20 @@
         function renderFeed(responses) {
             const container = document.getElementById('feedContainer');
             
-            // 1. FILTER: Only show entries that have an actual answer for Question 1
-            // This removes the "ghost" rows visible in your screenshot
+            // Filter out any rows that are empty or were created purely by "Likes" (rows with no Q1)
             const validResponses = responses.filter(r => r.Question1 && r.Question1.trim().length > 0);
             
             document.getElementById('countBadge').textContent = validResponses.length;
 
             if (validResponses.length === 0) {
-                container.innerHTML = `<div class="p-12 text-center border-4 border-dashed border-slate-300 rounded-3xl"><p class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">No responses yet.</p></div>`;
+                container.innerHTML = `<div class="p-12 text-center border-4 border-dashed border-slate-300 rounded-3xl"><p class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">The feed is currently empty.</p></div>`;
                 return;
             }
 
-            // 2. RENDER: We use the actual index from the FULL responses array to target the correct row in Google Sheets
+            // We iterate through the FULL array to ensure the 'index' maps correctly to the Sheet row number
             container.innerHTML = responses.map((resp, index) => {
-                // If it's a ghost row, don't render it
                 if (!resp.Question1 || resp.Question1.trim().length === 0) return '';
 
-                // sheetRowId = Index in array + 1 (for 1-indexing) + 1 (for header row) = index + 2
                 const sheetRowId = index + 2; 
                 const entryId = (resp.Timestamp || 'T') + "_" + (resp.User || 'U') + "_" + index;
                 const isLiked = likedEntries.includes(entryId);
@@ -266,33 +285,33 @@
                 <div class="bg-white border-2 border-black p-5 rounded-2xl brutalist-shadow">
                     <div class="flex justify-between items-start mb-4">
                         <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 bg-emerald-100 rounded-full border-2 border-black flex items-center justify-center">
-                                <i data-lucide="user" class="w-4 h-4 text-emerald-700"></i>
+                            <div class="w-8 h-8 bg-slate-100 rounded-full border-2 border-black flex items-center justify-center">
+                                <i data-lucide="user" class="w-4 h-4 text-slate-600"></i>
                             </div>
                             <div>
                                 <p class="text-sm font-black tracking-tight leading-none">${resp.User || 'Anonymous'}</p>
-                                <p class="text-[9px] font-mono font-bold text-slate-400 mt-1">${resp.Timestamp ? new Date(resp.Timestamp).toLocaleDateString() : 'Recent'}</p>
+                                <p class="text-[9px] font-mono font-bold text-slate-400 mt-1">${resp.Timestamp ? new Date(resp.Timestamp).toLocaleDateString() : 'Just Now'}</p>
                             </div>
                         </div>
                         
                         <button 
                             onclick="handleLike('${entryId}', ${sheetRowId}, ${index})"
                             id="likeBtn_${index}"
-                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-black transition-all active-press ${isLiked ? 'bg-emerald-400 brutalist-shadow-sm' : 'bg-white text-slate-400 border-slate-200'}"
+                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-black transition-all active-press ${isLiked ? 'bg-ddsbOrange brutalist-shadow-sm text-black' : 'bg-white text-slate-300 border-slate-100'}"
                         >
-                            <i data-lucide="thumbs-up" class="w-4 h-4 ${isLiked ? 'text-black fill-black' : ''}"></i>
-                            <span class="font-black text-xs ${isLiked ? 'text-black' : 'text-slate-400'}">${likeCount}</span>
+                            <i data-lucide="heart" class="w-4 h-4 ${isLiked ? 'fill-black' : ''}"></i>
+                            <span class="font-black text-xs">${likeCount}</span>
                         </button>
                     </div>
 
                     <div class="space-y-4">
-                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                            <p class="text-[9px] font-black text-emerald-600 uppercase mb-1 tracking-widest">${questions.q1}</p>
+                        <div class="bg-red-50/50 p-3 rounded-xl border border-red-100">
+                            <p class="text-[9px] font-black text-ddsbMaroon uppercase mb-1 tracking-widest">${questions.q1}</p>
                             <p class="font-bold text-base leading-snug text-slate-800">${resp.Question1 || ''}</p>
                         </div>
-                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                            <p class="text-[9px] font-black text-blue-600 uppercase mb-1 tracking-widest">${questions.q2}</p>
-                            <p class="text-sm font-medium text-slate-700 italic">"${resp.Question2 || ''}"</p>
+                        <div class="bg-blue-50/50 p-3 rounded-xl border border-blue-100">
+                            <p class="text-[9px] font-black text-ddsbBlue uppercase mb-1 tracking-widest">${questions.q2}</p>
+                            <p class="text-sm font-medium text-slate-600 italic leading-relaxed">"${resp.Question2 || ''}"</p>
                         </div>
                     </div>
                 </div>
@@ -309,29 +328,20 @@
             const isAlreadyLiked = likedEntries.includes(entryId);
             
             if (isAlreadyLiked) {
-                btn.classList.remove('bg-emerald-400', 'brutalist-shadow-sm', 'text-black', 'like-pop');
-                btn.classList.add('bg-white', 'text-slate-400', 'border-slate-200');
-                if (icon) icon.classList.remove('fill-black', 'text-black');
-                if (countSpan) {
-                    countSpan.classList.replace('text-black', 'text-slate-400');
-                    countSpan.textContent = Math.max(0, parseInt(countSpan.textContent || 0) - 1);
-                }
+                btn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-100 bg-white text-slate-300 transition-all active-press";
+                if (icon) icon.classList.remove('fill-black');
+                if (countSpan) countSpan.textContent = Math.max(0, parseInt(countSpan.textContent || 0) - 1);
                 likedEntries = likedEntries.filter(id => id !== entryId);
             } else {
-                btn.classList.remove('bg-white', 'text-slate-400', 'border-slate-200');
-                btn.classList.add('bg-emerald-400', 'brutalist-shadow-sm', 'text-black', 'like-pop');
-                if (icon) icon.classList.add('fill-black', 'text-black');
-                if (countSpan) {
-                    countSpan.classList.replace('text-slate-400', 'text-black');
-                    countSpan.textContent = parseInt(countSpan.textContent || 0) + 1;
-                }
+                btn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-black bg-ddsbOrange brutalist-shadow-sm text-black transition-all active-press";
+                if (icon) icon.classList.add('fill-black');
+                if (countSpan) countSpan.textContent = parseInt(countSpan.textContent || 0) + 1;
                 likedEntries.push(entryId);
             }
 
-            localStorage.setItem('fos_liked_entries', JSON.stringify(likedEntries));
+            localStorage.setItem('fos_liked_entries_v2', JSON.stringify(likedEntries));
 
             try {
-                // Sent to Apps Script to update row in Sheet
                 await fetch(WEB_APP_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -341,7 +351,7 @@
                     })
                 });
             } catch (err) {
-                console.error("Like sync failed", err);
+                console.error("Like sync error", err);
             }
         }
 
@@ -351,11 +361,11 @@
             const btnText = document.getElementById('btnText');
             
             btn.disabled = true;
-            btnText.textContent = "SENDING...";
+            btnText.textContent = "PUBLISHING...";
 
             const payload = {
                 type: 'post',
-                user: document.getElementById('userInput').value || 'Anonymous',
+                user: document.getElementById('userInput').value || 'DDSB Leader',
                 q1: document.getElementById('q1Input').value,
                 q2: document.getElementById('q2Input').value
             };
@@ -367,7 +377,7 @@
                     body: JSON.stringify(payload)
                 });
 
-                showStatus('success', 'Response submitted!');
+                showStatus('success', 'Response Published!');
                 document.getElementById('q1Input').value = '';
                 document.getElementById('q2Input').value = '';
                 
@@ -376,11 +386,11 @@
                     switchView('feed');
                 }, 1500);
             } catch (err) {
-                showStatus('error', 'Failed to send.');
+                showStatus('error', 'Connection failed.');
                 setTimeout(hideStatus, 2000);
             } finally {
                 btn.disabled = false;
-                btnText.textContent = "PUBLISH RESPONSE";
+                btnText.textContent = "PUBLISH TO FEED";
             }
         };
 
@@ -390,9 +400,9 @@
             const title = document.getElementById('statusTitle');
             const text = document.getElementById('statusMsg');
 
-            title.textContent = type === 'success' ? 'Confirmed!' : 'Error';
+            title.textContent = type === 'success' ? 'Confirmed' : 'Error';
             text.textContent = msg;
-            iconBox.className = `w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center border-4 border-black ${type === 'success' ? 'bg-emerald-400' : 'bg-red-400'}`;
+            iconBox.className = `w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center border-4 border-black ${type === 'success' ? 'bg-ddsbOrange' : 'bg-red-400'}`;
             
             overlay.classList.remove('hidden');
         }
